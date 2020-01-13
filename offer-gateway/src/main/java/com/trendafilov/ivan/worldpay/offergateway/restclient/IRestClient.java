@@ -26,7 +26,7 @@ public interface IRestClient {
     <T, Q> Q exchange(final String endpointUri,
                       final HttpHeaders httpHeaders,
                       final HttpMethod httpMethod, final T body,
-                      final Class<Q> response, final String notFoundMessage)
+                      final Class<Q> response)
     ;
 
     /**
@@ -44,7 +44,7 @@ public interface IRestClient {
     <T, Q> Q exchange(final String endpointUri,
                       final HttpHeaders httpHeaders,
                       final HttpMethod httpMethod, final T body,
-                      final TypeReference<Q> typeReference, final String notFoundMessage)
+                      final TypeReference<Q> typeReference)
     ;
 
     <T> ResponseEntity<T> getForEntity(String endpointUri, Class<T> response,

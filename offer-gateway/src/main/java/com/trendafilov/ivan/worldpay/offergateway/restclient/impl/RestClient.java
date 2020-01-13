@@ -7,6 +7,8 @@ package com.trendafilov.ivan.worldpay.offergateway.restclient.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trendafilov.ivan.worldpay.offergateway.dtos.response.ErrorResponse;
+import com.trendafilov.ivan.worldpay.offergateway.enums.ErrorMessagesEnum;
+import com.trendafilov.ivan.worldpay.offergateway.exceptions.GatewayServiceException;
 import com.trendafilov.ivan.worldpay.offergateway.restclient.IRestClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,19 +45,19 @@ public class RestClient implements IRestClient {
     public <T, Q> Q exchange(final String endpointUri,
                              final HttpHeaders httpHeaders,
                              final HttpMethod httpMethod, final T body,
-                             final Class<Q> response, final String notFoundMessage) {
+                             final Class<Q> response) {
 
         if (response == null) {
-//            log.warn("Response should not be null");
-//            throw new CustomerServiceException(ErrorMessages.SERVER_ERROR.getMessage(),
-//                                               HttpStatus.INTERNAL_SERVER_ERROR.value());
+            log.warn("Response should not be null");
+            throw new GatewayServiceException(ErrorMessagesEnum.SERVER_ERROR.getMessage(),
+                                              HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
 
         final ResponseMapper<Q> mapper =
             bodyAsString -> objectMapper.readValue(bodyAsString, response);
         final String responseName = response.getName();
 
-        return this.exchange(endpointUri, httpHeaders, httpMethod, body, notFoundMessage, mapper,
+        return this.exchange(endpointUri, httpHeaders, httpMethod, body, mapper,
                              responseName);
     }
 
@@ -63,12 +65,12 @@ public class RestClient implements IRestClient {
     public <T, Q> Q exchange(final String endpointUri,
                              final HttpHeaders httpHeaders,
                              final HttpMethod httpMethod, final T body,
-                             final TypeReference<Q> typeReference, final String notFoundMessage) {
+                             final TypeReference<Q> typeReference) {
 
         if (typeReference == null) {
             log.warn("Type reference should not be null");
-//            throw new CustomerServiceException(ErrorMessages.SERVER_ERROR.getMessage(),
-//                                               HttpStatus.INTERNAL_SERVER_ERROR.value());
+            throw new GatewayServiceException(ErrorMessagesEnum.SERVER_ERROR.getMessage(),
+                                              HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
 
         final ResponseMapper<Q> mapper =
@@ -78,14 +80,14 @@ public class RestClient implements IRestClient {
             typeReference.getType()
                          .getTypeName();
 
-        return this.exchange(endpointUri, httpHeaders, httpMethod, body, notFoundMessage, mapper,
+        return this.exchange(endpointUri, httpHeaders, httpMethod, body, mapper,
                              responseName);
     }
 
     private <T, Q> Q exchange(final String endpointUri,
                               final HttpHeaders httpHeaders,
                               final HttpMethod httpMethod, final T body,
-                              final String notFoundMessage, final ResponseMapper<Q> responseMapper,
+                              final ResponseMapper<Q> responseMapper,
                               final String responseName) {
         log.info("Calling external API with http method: {} and URL: {} ", httpMethod.toString(),
                  endpointUri);
@@ -94,11 +96,6 @@ public class RestClient implements IRestClient {
         final ResponseEntity<String> responseEntity =
             restTemplate.exchange(endpointUri, httpMethod, entity, String.class);
         final HttpStatus httpStatus = responseEntity.getStatusCode();
-
-        if (HttpStatus.NOT_FOUND == httpStatus) {
-//            throw new CustomerServiceException(notFoundMessage,
-//                                               httpStatus.value());
-        }
 
         final String responseEntityBody = responseEntity.getBody();
 
@@ -111,7 +108,7 @@ public class RestClient implements IRestClient {
         if (responseEntityBody == null || responseEntityBody.isEmpty()) {
             return null;
         }
-        // TODO Use isError method after migration
+
         if (!httpStatus.is2xxSuccessful()) {
             handleSpringboardError(responseEntity, httpStatus);
         }
@@ -120,10 +117,10 @@ public class RestClient implements IRestClient {
         try {
             responseBody = responseMapper.map(responseEntityBody);
         } catch (final IOException e) {
-            //log.error(
-//                "Unable to convert response body during exchange");
-//            throw new CustomerServiceException(ErrorMessages.SERVER_ERROR.getMessage(),
-//                                               HttpStatus.INTERNAL_SERVER_ERROR.value());
+            log.error(
+                "Unable to convert response body during exchange");
+            throw new GatewayServiceException(ErrorMessagesEnum.SERVER_ERROR.getMessage(),
+                                              HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
         return responseBody;
     }
@@ -134,12 +131,12 @@ public class RestClient implements IRestClient {
             final ErrorResponse
                 responseError =
                 objectMapper.readValue(responseEntity.getBody(), ErrorResponse.class);
-//            throw new CustomerServiceException(responseError.getMessage(),
-//                                               responseEntity.getStatusCodeValue());
+            throw new GatewayServiceException(responseError.getMessage(),
+                                              responseEntity.getStatusCodeValue());
         } catch (final IOException e) {
             log.error(
                 "Unable to convert response body during exchange ");
-            //throw new CustomerServiceException(responseEntity.getBody(), httpStatus.value());
+            throw new GatewayServiceException(responseEntity.getBody(), httpStatus.value());
         }
     }
 

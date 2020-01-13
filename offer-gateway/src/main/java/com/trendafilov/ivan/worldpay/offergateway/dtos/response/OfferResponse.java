@@ -1,7 +1,6 @@
 package com.trendafilov.ivan.worldpay.offergateway.dtos.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -12,7 +11,6 @@ import lombok.Data;
 
 @Data
 @Builder
-@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OfferResponse {
 
@@ -23,5 +21,6 @@ public class OfferResponse {
     private String status;
     private String currency;
     private BigDecimal price;
+    private StudentResponse studentResponse;
     private List<ProductItemResponse> productItemResponses;
 }
