@@ -38,7 +38,12 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public StudentResponse findStudentByStudentId(final String studentId) {
-        return null;
+        final StudentResponse studentResponse =
+            restClient.exchange(STUDENT_URL + studentId, null,
+                                HttpMethod.GET, null,
+                                StudentResponse.class
+            );
+        return studentResponse;
     }
 
     @Override

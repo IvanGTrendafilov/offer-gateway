@@ -2,6 +2,7 @@ package com.trendafilov.ivan.worldpay.offergateway.controllers;
 
 import com.trendafilov.ivan.worldpay.offergateway.dtos.requests.OfferRequest;
 import com.trendafilov.ivan.worldpay.offergateway.dtos.response.OfferResponse;
+import com.trendafilov.ivan.worldpay.offergateway.enums.OfferStatus;
 import com.trendafilov.ivan.worldpay.offergateway.services.OfferService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -81,5 +83,60 @@ public class OfferGatewayController {
             allOffersToStudent =
             offerService.getAllOffersToStudent(studentId);
         return new ResponseEntity<>(allOffersToStudent, HttpStatus.OK);
+    }
+
+    @ApiOperation(
+        value = "Cancel Merchant offer",
+        notes = "Cancel Merchant Offer. GatewayServiceException is thrown when merchant/offer is invalid",
+        response = ResponseEntity.class)
+    @PutMapping(value = "merchants/{merchantId}/offers/{offerId}")
+    public ResponseEntity cancelMerchantOffer(@PathVariable final String merchantId,
+                                              @PathVariable final String offerId) {
+        log.info("Cancel merchant offer with merchant id: {} and Offer Id: {}", merchantId,
+                 offerId);
+        offerService.cancelMerchantOffer(merchantId, offerId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @ApiOperation(
+        value = "Assign Student to offer",
+        notes = "Assign Student to Offer. GatewayServiceException is thrown when student/offer is invalid of Student has accepted Offer",
+        response = ResponseEntity.class)
+    @PutMapping(value = "merchants/{merchantId}/students/{studentId}/offers/{offerId}")
+    public ResponseEntity assignStudentToOffer(@PathVariable final String merchantId,
+                                               @PathVariable final String studentId,
+                                               @PathVariable final String offerId) {
+        log.info("Student assign to offer with student id: {} and Offer Id: {}", studentId,
+                 offerId);
+        final OfferResponse
+            offerResponse =
+            offerService.assignStudentToOffer(studentId, offerId, merchantId);
+        return new ResponseEntity<>(offerResponse, HttpStatus.OK);
+    }
+
+    @ApiOperation(
+        value = "Accept Student offer",
+        notes = "Accept Student Offer. GatewayServiceException is thrown when student/offer is invalid",
+        response = ResponseEntity.class)
+    @PutMapping(value = "students/{studentId}/offers/{offerId}/accept")
+    public ResponseEntity acceptStudentOffer(@PathVariable final String studentId,
+                                             @PathVariable final String offerId) {
+        log.info("Student accept offer with student id: {} and Offer Id: {}", studentId,
+                 offerId);
+        offerService.changeOfferStatusForStudent(studentId, offerId, OfferStatus.ACCEPTED);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @ApiOperation(
+        value = "Decline Student offer",
+        notes = "Decline Student Offer. GatewayServiceException is thrown when student/offer is invalid",
+        response = ResponseEntity.class)
+    @PutMapping(value = "students/{studentId}/offers/{offerId}/decline")
+    public ResponseEntity declineStudentOffer(@PathVariable final String studentId,
+                                              @PathVariable final String offerId) {
+        log.info("Student accept offer offer with student id: {} and Offer Id: {}", studentId,
+                 offerId);
+        offerService.changeOfferStatusForStudent(studentId, offerId, OfferStatus.DECLINED);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
