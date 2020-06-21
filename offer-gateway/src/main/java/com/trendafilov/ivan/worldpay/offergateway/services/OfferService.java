@@ -1,5 +1,6 @@
 package com.trendafilov.ivan.worldpay.offergateway.services;
 
+import com.trendafilov.ivan.worldpay.offergateway.dtos.requests.CommentRequest;
 import com.trendafilov.ivan.worldpay.offergateway.dtos.requests.OfferRequest;
 import com.trendafilov.ivan.worldpay.offergateway.dtos.response.OfferResponse;
 import com.trendafilov.ivan.worldpay.offergateway.enums.OfferStatus;
@@ -19,5 +20,7 @@ public interface OfferService {
     OfferResponse assignStudentToOffer(String studentId, String offerId, String merchantId);
 
     void changeOfferStatusForStudent(String studentId, String offerId, OfferStatus accepted);
+
+    void commentOffer(String offerId, CommentRequest commentRequest);
 
 }

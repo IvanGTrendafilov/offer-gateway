@@ -23,4 +23,6 @@ public class OfferResponse {
     private BigDecimal price;
     private StudentResponse studentResponse;
     private List<ProductItemResponse> productItemResponses;
+    private List<Comment> commentResponses;
+
 }

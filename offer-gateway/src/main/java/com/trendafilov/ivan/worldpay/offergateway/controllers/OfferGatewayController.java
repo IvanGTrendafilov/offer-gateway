@@ -1,10 +1,12 @@
 package com.trendafilov.ivan.worldpay.offergateway.controllers;
 
+import com.trendafilov.ivan.worldpay.offergateway.dtos.requests.CommentRequest;
 import com.trendafilov.ivan.worldpay.offergateway.dtos.requests.OfferRequest;
 import com.trendafilov.ivan.worldpay.offergateway.dtos.response.OfferResponse;
 import com.trendafilov.ivan.worldpay.offergateway.enums.OfferStatus;
 import com.trendafilov.ivan.worldpay.offergateway.services.OfferService;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,11 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/offers/v1")
 @Slf4j
+@RequiredArgsConstructor
 public class OfferGatewayController {
 
-    @Autowired
-    private OfferService offerService;
-
+    private final OfferService offerService;
 
     @ApiOperation(
         value = "Get all offers for merchant by specific status",
@@ -137,6 +138,16 @@ public class OfferGatewayController {
         log.info("Student accept offer offer with student id: {} and Offer Id: {}", studentId,
                  offerId);
         offerService.changeOfferStatusForStudent(studentId, offerId, OfferStatus.DECLINED);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @ApiOperation(
+            value = "Comment Student offer",
+            notes = "Comment Student Offer. OfferServiceException is thrown when offer is invalid",
+            response = ResponseEntity.class)
+    @PostMapping(value = "offers/{offerId}/comment")
+    public ResponseEntity commentOffer(@PathVariable final String offerId, @RequestBody final CommentRequest commentRequest) {
+        offerService.commentOffer(offerId, commentRequest);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
